@@ -1,4 +1,4 @@
-3D kidney pathology, WebAR
+#3D kidney pathology, WebAR
 Veterinary Pathology experience with WebAR (first webAR veterinary pathology app in the world). Veterinary Pathology 3D is a unique webAR app (Web-Augmented Reality) that enables students to interactively model pathological changes on 3D models of animal organs (only kidney for now). This app enables veterinary students to improve their skills in recognition of morphological changes and knowledge in pathology. 
 
 
