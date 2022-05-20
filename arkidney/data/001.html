@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html class="js-focus-visible" lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Veterinary Pathology 3D</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="son_dosyalar/full.css">
+    
+    <!-- The following libraries and polyfills are recommended to maximize browser support -->
+    <!-- NOTE: you must adjust the paths as appropriate for your project -->
+    
+    <!-- 🚨 REQUIRED: Web Components polyfill to support Edge and Firefox < 63 -->
+    <script src="son_dosyalar/webcomponents-loader.js"></script>
+
+    <!-- 💁 OPTIONAL: Intersection Observer polyfill for better performance in Safari and IE11 -->
+    <script src="son_dosyalar/intersection-observer.js"></script>
+
+    <!-- 💁 OPTIONAL: Resize Observer polyfill improves resize behavior in non-Chrome browsers -->
+    <script src="son_dosyalar/ResizeObserver.js"></script>
+    
+    <!-- 💁 OPTIONAL: The :focus-visible polyfill removes the focus ring for some input types -->
+    <script src="son_dosyalar/focus-visible.js" defer="defer"></script>
+<style>
+.Hotspot {
+    background: #fff;
+    border-radius: 32px;
+    border: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    box-sizing: border-box;
+    cursor: pointer;
+    height: 24px;
+    padding: 8px;
+    position: relative;
+    transition: opacity 0.3s;
+    width: 24px;
+}
+
+.Hotspot:not([data-visible]) {
+    background: transparent;
+    border: 4px solid #fff;
+    box-shadow: none;
+    height: 32px;
+    pointer-events: none;
+    width: 32px;
+}
+
+.Hotspot:focus {
+    border: 4px solid rgb(0, 128, 200);
+    height: 32px;
+    outline: none;
+    width: 32px;
+}
+
+.Hotspot>* {
+    opacity: 1;
+    transform: translateY(-50%);
+}
+
+.HotspotAnnotation {
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    color: rgba(0, 0, 0, 0.8);
+    display: block;
+    font-family: Futura, Helvetica Neue, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    left: calc(100% + 1em);
+    max-width: 128px;
+    padding: 0.5em 1em;
+    position: absolute;
+    top: 50%;
+    width: max-content;
+}
+
+.Hotspot:not([data-visible])>* {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(calc(-50% + 4px));
+    transition: transform 0.3s, opacity 0.3s;
+}
+</style>	
+
+<style>
+#myDIV {
+  width: 50%;
+  padding: 1px 0;
+  text-align: center;
+  background-color: lightblue;
+  margin-top: 2px;
+}
+</style>
+<style>
+.button {
+  background-color: #1b99b3;
+  border: none;
+  color: white;
+  padding: 6px 7px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+</style>
+<style>
+.button1 {
+  background-color: #cc7d16;
+  border: none;
+  color: white;
+  padding: 6px 7px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+</style>
+<script>
+//add this js script into the web page,
+//you want reload once after first load
+window.onload = function() {
+    //considering there aren't any hashes in the urls already
+    if(!window.location.hash) {
+        //setting window location
+        window.location = window.location + '#loaded';
+        //using reload() method to reload web page
+        window.location.reload();
+    }
+}
+</script>
+<script>
+function goBack() {
+  window.history.back()
+}
+</script>
+  </head> 
+<body>
+
+  <div id="plane" class="full-height" style="font-size: 14px;line-height: 0.4;">
+  <section class="attribution">
+      <span>
+        <h1><img src="vp3d.png" alt="vp3d" style="width:20px;height:20px;">&nbsp;&nbsp;&nbsp; Normal kidney <a href="../../3dpathologymodels.html"><button style="position: absolute; top:0; right: 0;" class="button">Main Page </button></a>
+</h1>
+      </span>
+    </section>
+    <!-- All you need to put beautiful, interactive 3D content on your site: -->
+    <model-viewer  src="modeller/1_normal.glb" ios-src="modeller/1_normal.usdz" 
+	alt="A 3D model of an astronaut" shadow-intensity="0" camera-controls="" autoplay 
+	environment-image="modeller/111.hdr"
+	auto-rotate="" ar="" data-js-focus-visible="" ar-status="not-presenting">
+<button class="Hotspot" slot="hotspot-1" data-position="0.1556075007634498m 0.16616776814325784m -0.06072899617902877m" data-normal="0.12002202614123689m 0.1791949774083943m 0.9764649882676579m" data-visibility-attribute="visible">
+        <div class="HotspotAnnotation">This is a normal kidney cross section, gross</div>
+    </button><button class="Hotspot" slot="hotspot-3" data-position="-0.03251857444968778m 0.1604034697420053m -0.06701103977835897m" data-normal="0.0013419499140853652m 0.0008002904094341165m 0.9999987793520992m" data-visibility-attribute="visible">
+        <div class="HotspotAnnotation">Cortex</div>
+    </button><button class="Hotspot" slot="hotspot-4" data-position="-0.0018869265877508729m 0.0575042318876442m -0.05461734258059883m" data-normal="-0.1830314633577336m 0.10297639674248989m 0.9776990053871693m" data-visibility-attribute="visible">
+        <div class="HotspotAnnotation">Medulla</div>
+    </button><button class="Hotspot" slot="hotspot-5" data-position="0.08914157948009238m -0.007292227334615072m -0.0728535623568414m" data-normal="0.12291058060002637m 0.053592300771318845m 0.9909696536597884m" data-visibility-attribute="visible">
+        <div class="HotspotAnnotation">Renal Pelvis</div>
+    </button><button class="Hotspot" slot="hotspot-6" data-position="0.2045897055995761m 0.16195829785061244m -0.12743163334509722m" data-normal="0.8434992387399561m 0.35071108376986665m -0.40683014879194945m" data-visibility-attribute="visible">
+        <div class="HotspotAnnotation">Renal Capsule</div>
+    </button>        
+
+	<button class="button1" onclick="myFunction()">Close/Open info</button>
+<button slot="ar-button" style="background-color: #cc7d16; font-size: 16px; border-radius: 1px; border: none; position: absolute; bottom: 60px; right: 7px; ">
+          👋 Activate AR
+      </button>
+<div id="myDIV">
+<p style="text-align: center;"><span style='font-size:16px;line-height:115%;font-family:"Tahoma","sans-serif";'>This is a cross section of normal kidney.</span></p><p style="text-align: center;"><span style='font-size:16px;line-height:115%;font-family:"Tahoma","sans-serif";'><span style='font-size:16px;line-height:115%;font-family:"Tahoma","sans-serif";'>Gross inspection should include, size, shape, color, and consistency.</span></span></p><p style='margin: 0cm 0cm 10pt; line-height: 115%; font-size: 15px; font-family: "Calibri", "sans-serif"; text-align: center;'>&nbsp;<span style='font-size:16px;line-height:115%;font-family:"Tahoma","sans-serif";'>A kidney size is generally&nbsp;</span><span style='font-size:16px;line-height:115%;font-family:"Tahoma","sans-serif";'>about 3 vertebrae long.</span></p><p style='margin: 0cm 0cm 10pt; line-height: 115%; font-size: 15px; font-family: "Calibri", "sans-serif"; text-align: center;'><span style='font-size:16px;line-height:115%;font-family:"Tahoma","sans-serif";'>The kidneys are&nbsp;</span><span style='font-size:16px;line-height:115%;font-family:"Tahoma","sans-serif";'>normally bean- or horseshoe-shaped,&nbsp;</span></p><p style='margin: 0cm 0cm 10pt; line-height: 115%; font-size: 15px; font-family: "Calibri", "sans-serif"; text-align: center;'><span style='font-size:16px;line-height:115%;font-family:"Tahoma","sans-serif";'>but the bovine&nbsp;</span><span style='font-size:16px;line-height:115%;font-family:"Tahoma","sans-serif";'>kidney is lobated externally.&nbsp;</span></p><p style='margin: 0cm 0cm 10pt; line-height: 115%; font-size: 15px; font-family: "Calibri", "sans-serif"; text-align: center;'><span style='font-size:16px;line-height:115%;font-family:"Tahoma","sans-serif";'>The normal&nbsp;</span><span style='font-size:16px;line-height:115%;font-family:"Tahoma","sans-serif";'>cortex-to-medulla ratio in this plane is about 1 : 2 or 1 : 3.&nbsp;</span></p><p style='margin: 0cm 0cm 10pt; line-height: 115%; font-size: 15px; font-family: "Calibri", "sans-serif"; text-align: center;'><span style='font-size:16px;line-height:115%;font-family:"Tahoma","sans-serif";'>The cortex normally rate as 80% of the renal mass,&nbsp;</span></p><p style='margin: 0cm 0cm 10pt; line-height: 115%; font-size: 15px; font-family: "Calibri", "sans-serif"; text-align: center;'><span style='font-size:16px;line-height:115%;font-family:"Tahoma","sans-serif";'>a fact that is better understanding in a coronal section , than in a sagittal section.</span></p>
+</div>
+
+
+<script>
+function myFunction() {
+  var x = document.getElementById("myDIV");
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+</script>  
+	</model-viewer>
+	
+    
+    
+  </div>
+  
+  
+  <footer>
+
+  </footer>
+  
+  
+  <!-- 💁 Include both scripts below to support all browsers! -->
+
+  <!-- Loads <model-viewer> for modern browsers: -->
+  <script type="module" src="son_dosyalar/model-viewer.js">
+  </script>
+
+  <!-- Loads <model-viewer> for old browsers like IE11: -->
+  <script nomodule="" src="son_dosyalar/model-viewer-legacy.js">
+  </script>
+
+
+</body></html>
