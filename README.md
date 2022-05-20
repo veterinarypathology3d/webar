@@ -15,3 +15,8 @@ https://journals.pan.pl/Content/120914/3_Atmaca.pdf?handler=pdf
 or
  
 https://www.researchgate.net/publication/355915533_Building_a_Web-Augmented_Reality_application_for_demonstration_of_kidney_pathology_for_veterinary_education
+
+
+Download models Glb or Usdz format in folder.
+
+You can use them and contribute.
