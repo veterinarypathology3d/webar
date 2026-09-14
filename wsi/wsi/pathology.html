@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Slide Library</title>
+
+  <style>
+    :root {
+      --sidebar-width: 320px;
+      --bg-main: #020617;
+      --bg-sidebar: #111827;
+      --bg-card: #1f2937;
+      --bg-card-active: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #cbd5e1;
+      --border: #374151;
+      --accent: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg-main);
+      color: var(--text-main);
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: var(--sidebar-width) 1fr;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      height: 100vh;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+    }
+
+    .brand {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .brand-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      background: white;
+      border-radius: 10px;
+      padding: 4px;
+      flex-shrink: 0;
+    }
+
+    .brand-text {
+      min-width: 0;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.25;
+    }
+
+    .brand p {
+      margin: 5px 0 0;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .tools {
+      padding: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: #020617;
+      color: var(--text-main);
+      outline: none;
+    }
+
+    .search-box:focus {
+      border-color: var(--accent);
+    }
+
+    .slide-count {
+      margin-top: 8px;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .slide-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .slide-item {
+      width: 100%;
+      display: block;
+      text-align: left;
+      padding: 13px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-card);
+      color: var(--text-main);
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    .slide-item:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .slide-item.active {
+      background: var(--bg-card-active);
+      border-color: var(--accent);
+    }
+
+    .slide-title {
+      display: block;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 1.3;
+    }
+
+    .slide-description {
+      display: block;
+      margin-top: 5px;
+      color: var(--text-muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+.about-link {
+  display: block;
+  margin-top: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(96,165,250,0.12);
+  border: 1px solid rgba(96,165,250,0.35);
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.about-link:hover {
+  background: rgba(96,165,250,0.22);
+}
+.viewer-label,
+.viewer-help {
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(15, 23, 42, 0.78);
+  color: var(--text-main);
+  backdrop-filter: blur(8px);
+  border-radius: 10px;
+  padding: 9px 42px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+    .viewer-shell {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      min-width: 0;
+      background: #ffffff;
+    }
+
+    .viewer-header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      min-height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px;
+      background: rgba(15, 23, 42, 0.96);
+      border-bottom: 1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.28);
+      pointer-events: auto;
+    }
+
+    .viewer-title {
+      max-width: 70%;
+      padding: 9px 13px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 9px;
+      background: rgba(15,23,42,0.88);
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    }
+
+    .open-new {
+      padding: 9px 13px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 9px;
+      background: var(--accent);
+      color: #111827;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    }
+
+    #slideFrame {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: white;
+    }
+
+    .case-panel {
+      position: absolute;
+      top: 86px;
+      left: 12px;
+      z-index: 12;
+      width: min(840px, calc(100% - 24px));
+      max-height: calc(100vh - 98px);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 12px;
+      background: rgba(15,23,42,0.93);
+      color: var(--text-main);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.32);
+      backdrop-filter: blur(8px);
+      overflow: hidden;
+      display: none;
+    }
+
+    .case-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 13px;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .case-panel-header strong {
+      font-size: 13px;
+      color: var(--accent);
+    }
+
+    .case-toggle {
+      border: 1px solid rgba(245,158,11,0.55);
+      border-radius: 7px;
+      background: rgba(30,41,59,0.95);
+      color: var(--text-main);
+      padding: 5px 9px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .case-body {
+      padding: 13px;
+      max-height: calc(100vh - 155px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      scrollbar-gutter: stable;
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.55;
+      white-space: pre-line;
+    }
+
+    .case-body::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    .case-body::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.06);
+      border-radius: 10px;
+    }
+
+    .case-body::-webkit-scrollbar-thumb {
+      background: rgba(245,158,11,0.65);
+      border-radius: 10px;
+      border: 2px solid rgba(15,23,42,0.93);
+    }
+
+    .case-body::-webkit-scrollbar-thumb:hover {
+      background: rgba(245,158,11,0.9);
+    }
+
+    .case-body.hidden {
+      display: none;
+    }
+
+    .welcome {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      background:
+        radial-gradient(circle at top left, rgba(245,158,11,0.16), transparent 30%),
+        linear-gradient(135deg, #020617, #0f172a);
+      text-align: center;
+    }
+
+    .welcome-box {
+      max-width: 620px;
+      padding: 30px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 18px;
+      background: rgba(15,23,42,0.72);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+    }
+
+    .welcome-box h2 {
+      margin: 0 0 12px;
+      font-size: 30px;
+    }
+
+    .welcome-box p {
+      margin: 0;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .mobile-toggle {
+      display: none;
+    }
+
+    @media (max-width: 820px) {
+      :root {
+        --sidebar-width: 285px;
+      }
+
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: var(--sidebar-width);
+        z-index: 30;
+        transform: translateX(-100%);
+        transition: transform 0.2s ease;
+        box-shadow: 12px 0 30px rgba(0,0,0,0.35);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .mobile-toggle {
+        display: block;
+        position: fixed;
+        left: 12px;
+        bottom: 12px;
+        z-index: 40;
+        border: 0;
+        border-radius: 999px;
+        padding: 11px 15px;
+        background: var(--accent);
+        color: #111827;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+      }
+
+      .viewer-title {
+        max-width: 55%;
+        font-size: 12px;
+      }
+
+      .open-new {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <aside class="sidebar" id="sidebar">
+
+      <div class="brand">
+        <div class="brand-top">
+          <img src="tar.jpg" class="logo" alt="Logo" />
+
+          <div class="brand-text">
+            <h1>Digital Slide Library</h1>
+            <p>Histopathology</p>
+          </div>
+        </div>
+       
+      </div>
+ <a class="about-link" href="about.html">About this project</a>
+        <a class="about-link" href="index.html">go to Histology</a>
+      <div class="tools">
+        <input
+          id="slideSearch"
+          class="search-box"
+          type="search"
+          placeholder="Search slide..."
+          autocomplete="off"
+        />
+        <div id="slideCount" class="slide-count"></div>
+      </div>
+
+      <div id="slideList" class="slide-list"></div>
+    </aside>
+
+    <section class="viewer-shell">
+
+      <div class="viewer-header" id="viewerHeader" style="display:none;">
+        <div class="viewer-title" id="currentTitle"></div>
+
+        <a
+          id="openNewTab"
+          class="open-new"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Open in New Tab
+        </a>
+      </div>
+
+      <div class="case-panel" id="casePanel">
+        <div class="case-panel-header">
+          <strong>Clinical Case</strong>
+          <button class="case-toggle" id="caseToggle" type="button">Hide</button>
+        </div>
+        <div class="case-body" id="caseBody"></div>
+      </div>
+
+      <div class="welcome" id="welcome">
+        <div class="welcome-box">
+          <h2>Digital Slide Library</h2>
+          <p>
+            Select a digital slide from the menu on the left.
+            The selected website will open on this screen.
+          </p>
+        </div>
+      </div>
+
+      <iframe
+        id="slideFrame"
+        title="Digital slide viewer"
+        allow="fullscreen"
+        loading="eager"
+        referrerpolicy="strict-origin-when-cross-origin"
+      ></iframe>
+
+    </section>
+  </main>
+
+  <button id="mobileToggle" class="mobile-toggle" type="button">
+    Slides
+  </button>
+
+  <script>
+    /*
+      Yeni slayt ekleme örneği:
+
+      {
+        title: "Skin Case 2",
+        description: "Canine dermatopathology",
+        url: "https://example.com",
+        caseText: "Clinical history and cytology findings..."
+      }
+    */
+
+    const slides = [
+      {
+        title: "Pustular dermatitis and folliculitis",
+        description: "Canine dermatopathology case",
+        url: "https://davisthompsonfoundation.org/wsi/?id=4107",
+        caseText: `<strong>Pustular dermatitis and folliculitis with acantholytic cells associated with dermatophytosis </strong>
+
+<strong>History provided:</strong>
+Dog presented with alopecia, crusting, pustules, and erythema on the face and paws, with patchy lesions on the trunk. Lesions are pruritic. There was no response to anti-inflammatory steroids.
+
+<strong>Cytology:</strong>
+Neutrophils, 2+ cocci, and acantholytic cells.
+
+<strong>Description:</strong>
+Examined are six sections of haired skin with severe subcorneal pustules, acanthosis, crusting, superficial folliculitis, and furunculosis.
+Serocellular crusts composed of neutrophils, acantholytic cells, serum, and numerous cocci, together with increased amounts of parakeratotic and lamellar keratin, cover the markedly hyperplastic epidermis, which has moderate leukocytic exocytosis.
+There are multifocal neutrophilic subcorneal pustules containing solitary and rafts of acantholytic keratinocytes.
+The dermal infiltrate ranges from folliculocentric aggregates with a mural lymphocytic component to a more diffuse cellular infiltrate composed of plasma cells, lymphocytes, histiocytes, and neutrophils.
+Multifocal, more delineated nodules are present with increased numbers of neutrophils and free keratin lamellae. One nodule contains a free hair shaft with an irregular appearance of the hair cuticle, raising suspicion for fungal elements.
+
+<strong>Ancillary testing:</strong>
+PAS stain identifies dermatophytes within follicles and pustules.
+
+<strong>Morphologic diagnosis:</strong>
+Skin: Multifocal, severe, neutrophilic pustular dermatitis; superficial luminal and mural folliculitis; and furunculosis, with acantholytic cells, intralesional cocci, and dermatophytes.
+
+<strong>Final diagnosis and comment:</strong>
+The marked pustulation and folliculitis with acantholysis, mimicking pemphigus foliaceus, are associated with dermatophytosis.
+The presence of numerous cocci indicates a secondary bacterial infection (pyoderma).
+
+<strong>Source: https://slides.davisthompsonfoundation.org/</strong>`
+},
+
+     {
+  title: "Pemphigus Vulgaris",
+  description: "Canine dermatopathology case",
+  url: "https://davisthompsonfoundation.org/wsi/?id=4021",
+
+  caseText: `<strong>Pemphigus vulgaris.</strong>
+
+Canine, 2-year-10-month-old, pot-bellied gilt.
+
+This dog was recently submitted to a rescue organization with limited clinical history. The dog came in for a spay surgery that was cancelled due to severe widespread skin disease. There were no known treatments prior to presentation for the spay surgery.
+
+Within multiple sections, there is separation of the suprabasilar epithelium from the underlying, hypertrophied, retained basilar epithelial cells ("tombstoning"). These separations are filled by clear, colorless space. The separated suprabasilar portions of epidermis are moderately hypertrophic and overlain by variable amounts of orthokeratotic hyperkeratosis.
+
+Within the subjacent dermis, there are perivascular accumulations of lymphocytes and plasma cells with fewer macrophages, as well as free and intrahistiocytic brown, granular pigment.
+In sections that are not affected by suprabasilar clefting, there is extensive loss of the suprabasilar epithelium (erosion). The subjacent dermis contains perivascular mononuclear inflammation similar to that previously described.
+<strong>Source: https://slides.davisthompsonfoundation.org/</strong>`
+},
+
+     {
+  title: "Feline eosinophilic granuloma complex",
+  description: "Feline dermatopathology case",
+  url: "https://davisthompsonfoundation.org/wsi/?id=3149",
+
+  caseText: `<strong>Feline eosinophilic granuloma complex.</strong>
+
+<strong>Signalment: 8-year-old, male castrated, domestic shorthair cat.  </strong>
+
+<strong>History:</strong> This cat was referred to DOSS for evaluation of a sublingual mass that was causing excessive ptyalism with some blood-tinged saliva. 
+He has a history of cutaneous eosinophilic granulomas and was worked up by Dermatology including extensive allergy tes ng, bacterial and fungal cultures, treatment for secondary infec ons and diet trials. 
+He has been on cor costeroids, Atopica and Apoquel intermittently with some improvement.  
+On oral exam he was found to have an extensive, bilateral, sublingual mass spanning the frenulum as well as a plaque-like mass on the oral commissure.  Gross description: Several fragments of  irregular tissue. 
+
+<strong>Histopathology:</strong> This slide contains fragments of tissue composed of a stratified squamous epithelium and subepithelium. 
+All sections are similarly affected. The subepithelium is markedly expanded and infiltrated by a dense heterogenous inflammatory popula on predominantly comprised of eosinophils, macrophages, fewer neutrophils and mast cells. 
+The inflammatory cells are arranged in sheets and mul focal to coalescing nodules with radia ng abundant brightly eosinophilic fibrillar to granular material (flame figure). 
+Surrounding these flame figures are a rim of epithelioid macrophages and numerous eosinophils. 
+
+<strong>Morphologic diagnosis:</strong>  Tongue, left and right; severe, diffuse, chronic, eosinophilic and granulomatous glossitis.
+
+<strong>Comment:</strong> Feline eosinophilic granuloma complex (FEGC) is comprised of a group of lesions including eosinophilic granuloma, eosinophilic plaque and indolent (rodent) ulcer that affects the skin, mucocutaneous junctions and oral cavity of cats.  Rather than a specific disease, it is considered a group of dermatological reaction patterns presumed secondary to an allergen, most commonly insect bites, food or other environmental factors.  
+In humans with atopic dermatitis, patients may form IgE antibodies against self-antigen. Felis domes cus allergen I (Feld I) has been inves gated as a possible autoallergen in EGC. 
+<strong>Source: https://slides.davisthompsonfoundation.org/</strong> `
+},
+  {
+  title: "Nutritional myopathy - white muscle disease",
+  description: "Nutritional myopathy - white muscle disease",
+  url: "https://davisthompsonfoundation.org/wsi/?id=2889",
+
+  caseText: `<strong>Nutritional myopathy - white muscle disease.</strong>
+
+<strong>Signalment:</strong> Cows were being fed oat hay, alfalfa hay, Sudan hay, sweet corn silage, 30% protein cattle lick, a trace mineral mix fortified with vitamins A, D and E and a salt lick.  The breeding herd was vaccinated against infectious bovine rhinotracheitis (IBR), cytopathic and non-cytopathic bovine virus diarrhea (BVD), parainfluenza-3 (PI3), and bovine respiratory syncytial viruses and against 5 serovars of Leptospira interrogans the previous fall.  Nine of 18 calves (seven from heifers and two from cows) sired by one of the bulls were sti lborn and had multiple skeletal anomalies.  This bull had not been used previously. .  
+
+<strong>Gross findings:  </strong>
+At necropsy, a l four fetuses were sma l and had similar postmortem findings including brachyngathia inferior, domed forehead, patent fontane le, impacted lower molar teeth, fragile long bones with minimal or absent marrow cavity, and cerebellar coning at the foramen magnum.  Mandibles fractured easily.  Frontal bones of the skull were thickened.  Cervical vertebrae were shorter than expected.  One of the calves also had soft, short, thickened scapulas with numerous blood-filled cavities varying in diameter from 0.5-2.0 cm. 
+
+<strong>Histopathology: </strong>
+Microscopically, the mid-shaft of the femur (submitted slide) had a marrow cavity filled with chondro-osseous tissue with no laminar cortical layers (no unequivocal cortical bone was seen in this section).  The chondroosseous tissue was characterized by coarse-woven osteoid deposited on mineralized cartilaginous spicules.  Much of the osteoid was basophilic (mineralized osteoid) with cementing lines in many areas.  Numerous areas of potential marrow cavities were replaced by a network of fine connective tissue.  Osteoclasts were not seen. 
+
+No bacterial pathogens were isolated from lung, liver or stomach contents from any of the fetuses.  No BVD virus, Akabane disease virus, bluetongue virus or IBR virus was isolated from pooled fetal tissues.  A tissue pool (lung, thymus, spleen and kidney) from three of the four calves was positive for BVD virus by nested polymerase chain reaction (PCR) test, but a pool from the fourth calf was negative.  Immunohistochemical staining of sections of bone, lung, kidney and liver from two of the calves was negative for BVD virus. 
+
+<strong>Morphologic diagnosis: </strong>
+ Skeletal muscle: Multifocal to coalescing, severe, polyphasic, myocyte degeneration and necrosis with mineralization, proliferation of satellite cells and regeneration. 
+ <strong>Source: https://slides.davisthompsonfoundation.org/</strong>`
+
+},
+
+  {
+  title: "Masticatory muscle myositis",
+  description: "Masticatory muscle myositis",
+  url: "https://davisthompsonfoundation.org/wsi?id=3160",
+
+  caseText: `<strong>Masticatory muscle myositis.</strong>
+
+<strong>Signalment:</strong> 4-year-old, female, spayed, rottweiler
+
+<strong>History:</strong> This dog was presented to Emergency Service for conjunctival hyperemia, periocular swelling, and inability to open her mouth.On physical examination, the conjunctival hyperemia was worse in the right eye, there was increased resistance to retropulsion of the eyes bilaterally, and the right mandibular lymph node was enlarged. 
+The patient was transferred to the Dental and Oral Surgery Service where a sedated oral examination showed an inter-incisive distance of 2 cm.A CT of the head showed bilateral masticatory muscle contrast enhancement, subtle temporalis muscle asymmetry, and moderate reactive regional lymphadenopathy. 
+A surgical biopsy of the right temporalis muscle was performed, and serum was submitted for 2M antibody titers.  
+
+<strong>Laboratory results: </strong> 2M titer 1:4000  Reference intervals for masticatory muscle myositis at the UCD Neuromuscular Laboratory: < 1:100  Negative for masticatory muscle myositis. This assay may be negative if immunosuppressive dosages of corticosteroids have been given for longer than 710 days, in end-state masticatory muscle myositis, and in polymyositis. A muscle biopsy would be necessary for confirmation of the diagnosis in these cases. 1:100  > 1:100  This is a borderline antibody titer. A muscle biopsy is suggested for confirmation of masticatory muscle myositis in this case. This is consistent with a diagnosis of masticatory muscle myositis. 
+
+<strong>Gross findings: </strong> 
+A single jar of formalin labeled right temporalis muscle was received. The jar contained 2 pieces of dark red firm tissue measuring 1.0 x 0.7 x 0.5 cm and 1.2 x 0.3 x 0.5 cm. There are no significant, grossly discernible, lesions visible. 
+
+<strong>Histopathology: </strong>
+Cross sectional and longitudinal sections of both tissue pieces are provided. Examined are five sections of skeletal muscle tissue from the right temporalis muscle. Multifocally, affecting up to 10% of the entire section, the myocytes are infiltrated and separated by a mixed inflammatory population consisting predominantly of histiocytes, lymphocytes, and plasma cells with scattered eosinophils and mast cells. In some areas, the inflammatory infiltrate is predominantly neutrophilic. Some myocytes have hypereosinophilic cytoplasm, are round, have cytoplasmic vacuolation, and loss of striation (degeneration). Some myocytes have lightly basophilic 46cytoplasm with poorly defined cellular borders and pyknotic nuclear debris (necrosis). Other myocytes have lightly basophilic fibrillar cytoplasm with prominent internalized nuclei with prominent nucleoli (regeneration). 
+
+<strong>Morphologic diagnosis:</strong> Right temporalis muscle: Moderate, multifocal to coalescing, acute histiocytic, lymphocytic, plasmacytic, neutrophilic, eosinophilic, and mast cell myositis with myocyte degeneration, necrosis, and mild regeneration.  
+<strong>Source: https://slides.davisthompsonfoundation.org/</strong>`
+
+},
+
+  {
+  title: "Osteomyelitis",
+  description: "Osteomyelitis due to M. avium subsp. avium",
+  url: "https://davisthompsonfoundation.org/wsi/?id=4228",
+
+  caseText: `<strong>Osteomyelitis.</strong>
+
+<strong>Signalment:</strong> 
+10.5 year old, female King penguin
+<strong>History:</strong>
+Since December of 2008, this penguin was treated with antimicrobials and anti-inflammatories for lameness. Radiographs on January 13, 2009 detected a radiolucent region of the left tibiotarsal joint, and a soft tissue swelling was discovered near the right ankle.
+Biopsies of both masses on January 23 detected a caseogranuloma of the right ankle swelling, and crumbling, fragmented material from the bone biopsy of the left tibiotarsal bone.
+The animal failed to respond to long-term antimicrobial treatment and supportive care, and was euthanized on February 3, 2009.
+<strong>Gross findings:  </strong>
+A linear, 4 cm long scar was noted along the caudomedial aspect of the right hindlimb. Within the soft tissues of the caudal aspect of the right tibiotarsal joint was a 5 × 2 × 1 cm, firm, light tan nodule. This mass encompassed the superficial extensor tendons and had an approximately 0.5 cm in diameter nodule of caseous, cream-colored material centrally. The soft tissues surrounding the tendons and the nodule were mottled tan to red, shiny, and gelatinous.
+The soft tissues surrounding the extensor tendons of the lateral aspect of the left distal tibia were mottled tan to red, shiny, and gelatinous. The caudal articular surface of the lateral condyle of the left tibia and the underlying trabecular bone was completely effaced by a caseous nodule. On cut surface, this nodule was contained within the cortices of the distal tibia, was approximately 1.5 cm in diameter, firm, and dark green to cream colored.
+<strong>Histopathology: </strong>
+Focally effacing the cortical bone and extending into the underlying trabecular bone is a granulomatous infiltrate composed of many epithelioid macrophages and multinucleate giant cells and variable numbers of lymphocytes and plasma cells. There are multiple foci of necrotic cellular debris and fragments of degenerate bone rimmed by multinucleated giant cells. Some of the sections also contain multiple small caseogranulomas within the trabecular bone.
+In some sections, the granulomatous infiltrate and dense pools of hypereosinophilic, necrotic debris rimmed by multinucleated giant cells extends into and effaces the adjacent soft tissues and tendon. Multiple small granulomas were observed in the liver and spleen (sections not provided), consisting of aggregates of epithelioid macrophages and few multinucleated cells.
+
+<strong>Morphologic diagnosis:</strong>
+
+Bone: Severe, multifocal caseogranulomas
+
+<strong>Etiology</strong>
+
+Mycobacterium avium subsp. avium
+
+<strong>Source: https://slides.davisthompsonfoundation.org/</strong>`
+},
+
+  {
+  title: "Osteogenesis imperfecta",
+  description: "Multiple long bone fractures",
+  url: "https://davisthompsonfoundation.org/wsi?id=1626",
+
+  caseText: `<strong>Osteogenesis imperfecta.</strong>
+
+<strong>Signalment:</strong> 
+The puppy was euthanized immediately after delivery because of multiple fractures involving both humeri and femurs.
+<strong>History:</strong>
+The other five puppies in the litter were normal. Postmortem radiographs confirmed multiple diaphyseal fractures. Grossly, the bone cortices were abnormally thin and osteoporotic, and the amount of mature callus suggested that the fractures had occurred in utero, approximately one week before birth.
+<strong>Gross findings: </strong>
+Multiple bilateral diaphyseal fractures of the humeri and femurs. The affected bones had markedly thin, osteoporotic cortices. The right humerus showed a complete, displaced, comminuted pathological fracture with mature external callus formation, consistent with prenatal fractures.
+<strong>Macroscopic Findings: </strong>
+Postmortem radiographs revealed multiple mid-diaphyseal fractures involving both humeri and femurs. On gross examination, the right humerus had a complete, displaced, comminuted pathological fracture through an abnormally thin and osteoporotic cortex. A moderate amount of relatively mature external callus was present, indicating that the fractures had occurred in utero, probably more than one week before birth.
+<strong>Histopathology: </strong>
+Microscopically, growth plate organization was largely preserved, but the primary spongiosa contained abnormally thin trabeculae composed mainly of retained cartilage matrix with very little osteoid or bone formation. Secondary bony trabeculae were essentially absent. In addition, the osteogenic layer of the periosteum was markedly inactive, resulting in reduced cortical bone production, thin cortices, and pathologic fractures.
+<strong>Morphologic diagnosis:</strong>
+
+Osteogenesis imperfecta in a newborn puppy with multiple prenatal long-bone fractures.
+
+The authors considered the findings comparable to Type II osteogenesis imperfecta in humans, a severe and often lethal form that may cause death during birth or shortly afterward.
+
+<strong>Source: https://slides.davisthompsonfoundation.org/</strong>`
+},
+{
+  title: "Listeriosis",
+  description: "Listeriosis",
+  url: "https://davisthompsonfoundation.org/wsi/?id=2365",
+
+  caseText: `<strong>Listerial Encephalitis in a Horse.</strong>
+<a href="https://slides.davisthompsonfoundation.org/api/cases/2365/writeup"
+   download
+   target="_blank"
+   rel="noopener noreferrer"
+   style="display:inline-block; padding:10px 16px; background:#1f5f8b; color:white;
+          text-decoration:none; border-radius:6px; font-weight:bold;">
+   Download Case File ---- <strong>Source: https://slides.davisthompsonfoundation.org/</strong>
+</a>
+`
+},
+
+{
+  title: "Cerebellar abscess",
+  description: "Cerebellar abscess due to Rhodococcus equi",
+  url: "https://davisthompsonfoundation.org/wsi/?id=2409",
+
+  caseText: `<strong>Cerebellar abscess due to Rhodococcus equi.</strong>
+<a href="https://slides.davisthompsonfoundation.org/api/cases/2409/writeup"
+   download
+   target="_blank"
+   rel="noopener noreferrer"
+   style="display:inline-block; padding:10px 16px; background:#1f5f8b; color:white;
+          text-decoration:none; border-radius:6px; font-weight:bold;">
+   Download Case File ----  <strong>Source: https://slides.davisthompsonfoundation.org/</strong>
+</a>
+`
+},
+
+{
+  title: "Rabies",
+  description: "Bovine Rabies",
+  url: "https://davisthompsonfoundation.org/wsi?id=2950",
+
+  caseText: `<strong>Bovine Rabies</strong>
+<a href="https://slides.davisthompsonfoundation.org/api/cases/2950/writeup"
+   download
+   target="_blank"
+   rel="noopener noreferrer"
+   style="display:inline-block; padding:10px 16px; background:#1f5f8b; color:white;
+          text-decoration:none; border-radius:6px; font-weight:bold;">
+   Download Case File  ---- <strong>Source: https://slides.davisthompsonfoundation.org/</strong>
+</a>
+`
+},
+
+{
+  title: "Cerebellar neosporosis",
+  description: "Canine Cerebellar neosporosis",
+  url: "https://davisthompsonfoundation.org/wsi?id=563",
+
+  caseText: `<strong>Bovine Rabies</strong>
+<a href="https://slides.davisthompsonfoundation.org/api/cases/563/writeup"
+   download
+   target="_blank"
+   rel="noopener noreferrer"
+   style="display:inline-block; padding:10px 16px; background:#1f5f8b; color:white;
+          text-decoration:none; border-radius:6px; font-weight:bold;">
+   Download Case File  ---- <strong>Source: https://slides.davisthompsonfoundation.org/</strong>
+</a>
+`
+},
+
+{
+  title: " Canine distemper",
+  description: " Canine distemper ",
+  url: "https://davisthompsonfoundation.org/wsi/?id=3074",
+
+  caseText: `<strong>Bovine Rabies</strong>
+<a href="https://slides.davisthompsonfoundation.org/api/cases/3074/writeup"
+   download
+   target="_blank"
+   rel="noopener noreferrer"
+   style="display:inline-block; padding:10px 16px; background:#1f5f8b; color:white;
+          text-decoration:none; border-radius:6px; font-weight:bold;">
+   Download Case File ----  <strong>Source: https://slides.davisthompsonfoundation.org/</strong>
+</a>
+`
+},
+
+{
+  title: "Osteogenesis imperfecta – ASKJPC",
+  description: "Open the ASKJPC virtual slide in a new tab",
+  url: "https://image.askjpc.org/app/WebViewer/view/image/716",
+  openInNewTab: true
+}
+
+    ];
+
+    const slideList = document.getElementById("slideList");
+    const slideSearch = document.getElementById("slideSearch");
+    const slideCount = document.getElementById("slideCount");
+    const slideFrame = document.getElementById("slideFrame");
+    const currentTitle = document.getElementById("currentTitle");
+    const openNewTab = document.getElementById("openNewTab");
+    const viewerHeader = document.getElementById("viewerHeader");
+    const welcome = document.getElementById("welcome");
+    const casePanel = document.getElementById("casePanel");
+    const caseBody = document.getElementById("caseBody");
+    const caseToggle = document.getElementById("caseToggle");
+    const sidebar = document.getElementById("sidebar");
+    const mobileToggle = document.getElementById("mobileToggle");
+
+    let activeIndex = -1;
+
+    function loadSlide(index) {
+      const slide = slides[index];
+      if (!slide) return;
+
+      activeIndex = index;
+      currentTitle.textContent = slide.title;
+      openNewTab.href = slide.url;
+      slideFrame.src = slide.url;
+
+      if (slide.caseText && slide.caseText.trim()) {
+        caseBody.innerHTML  = slide.caseText;
+        casePanel.style.display = "block";
+        caseBody.classList.remove("hidden");
+        caseToggle.textContent = "Hide";
+      } else {
+        caseBody.innerHTML  = "";
+        casePanel.style.display = "none";
+      }
+
+      welcome.style.display = "none";
+      viewerHeader.style.display = "flex";
+      sidebar.classList.remove("open");
+
+      renderSlides();
+    }
+
+    function renderSlides() {
+      const query = slideSearch.value.trim().toLowerCase();
+      slideList.innerHTML = "";
+
+      const filteredSlides = slides
+        .map((slide, index) => ({ slide, index }))
+        .filter(({ slide }) => {
+          const text =
+            `${slide.title} ${slide.description || ""} ${slide.url}`.toLowerCase();
+
+          return text.includes(query);
+        });
+
+      slideCount.textContent = `${filteredSlides.length} slides`;
+
+      filteredSlides.forEach(({ slide, index }) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className =
+          "slide-item" + (index === activeIndex ? " active" : "");
+
+        const title = document.createElement("span");
+        title.className = "slide-title";
+        title.textContent = slide.title;
+
+        const description = document.createElement("span");
+        description.className = "slide-description";
+        description.textContent = slide.description || "";
+
+        button.appendChild(title);
+        button.appendChild(description);
+
+        button.addEventListener("click", () => {
+  if (slide.openInNewTab) {
+    window.open(slide.url, "_blank", "noopener,noreferrer");
+    sidebar.classList.remove("open");
+    return;
+  }
+
+  loadSlide(index);
+});
+
+        slideList.appendChild(button);
+      });
+    }
+
+    slideSearch.addEventListener("input", renderSlides);
+
+    mobileToggle.addEventListener("click", () => {
+      sidebar.classList.toggle("open");
+    });
+
+    caseToggle.addEventListener("click", () => {
+      caseBody.classList.toggle("hidden");
+
+      caseToggle.textContent =
+        caseBody.classList.contains("hidden") ? "Show" : "Hide";
+    });
+
+    renderSlides();
+  </script>
+</body>
+</html>
