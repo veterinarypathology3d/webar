@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Histo4Pathology</title>
+
+  <script src="openseadragon.min.js"></script>
+
+  <style>
+    :root {
+      --sidebar-width: 310px;
+      --header-height: 82px;
+      --bg-main: #0f172a;
+      --bg-sidebar: #111827;
+      --bg-card: #1f2937;
+      --bg-card-active: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #cbd5e1;
+      --border: #374151;
+      --accent: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg-main);
+      color: var(--text-main);
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: var(--sidebar-width) 1fr;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      height: 100vh;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+    }
+
+    .brand {
+      height: var(--header-height);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .brand img {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 4px;
+    }
+
+    .brand-fallback {
+      display: none;
+      width: 48px;
+      height: 48px;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      color: #111827;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      text-align: center;
+      line-height: 1.05;
+    }
+
+    .brand-title {
+      min-width: 0;
+    }
+
+    .brand-title h1 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .brand-title p {
+      margin: 3px 0 0;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .about-link {
+      display: block;
+      margin: 12px 14px 0;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: rgba(96, 165, 250, 0.12);
+      border: 1px solid rgba(96, 165, 250, 0.35);
+      color: #93c5fd;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .about-link:hover {
+      background: rgba(96, 165, 250, 0.22);
+    }
+
+    .slide-tools {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 10px 11px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #020617;
+      color: var(--text-main);
+      outline: none;
+    }
+
+    .search-box:focus {
+      border-color: var(--accent);
+    }
+
+    .slide-count {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .slide-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .slide-list::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    .slide-list::-webkit-scrollbar-track {
+      background: #0b1120;
+    }
+
+    .slide-list::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 10px;
+    }
+
+    .slide-item {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      background: var(--bg-card);
+      color: var(--text-main);
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .slide-item:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .slide-item.active {
+      background: var(--bg-card-active);
+      border-color: var(--accent);
+    }
+
+    .slide-item.embed-item {
+      background: linear-gradient(
+        135deg,
+        rgba(37, 99, 235, 0.32),
+        rgba(14, 165, 233, 0.16)
+      );
+      border-color: rgba(96, 165, 250, 0.65);
+    }
+
+    .slide-item.embed-item:hover {
+      background: linear-gradient(
+        135deg,
+        rgba(37, 99, 235, 0.48),
+        rgba(14, 165, 233, 0.27)
+      );
+      border-color: #60a5fa;
+    }
+
+    .slide-item.embed-item.active {
+      background: linear-gradient(
+        135deg,
+        rgba(37, 99, 235, 0.68),
+        rgba(14, 165, 233, 0.40)
+      );
+      border-color: #bfdbfe;
+    }
+
+    .slide-title {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .slide-path {
+      display: none;
+      margin-top: 5px;
+      font-size: 11px;
+      line-height: 1.3;
+      color: var(--text-muted);
+      word-break: break-all;
+    }
+
+    .viewer-shell {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      min-width: 0;
+      overflow: hidden;
+      background: #020617;
+    }
+
+    .viewer-topbar {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      pointer-events: none;
+    }
+
+    .viewer-label,
+    .viewer-help {
+      pointer-events: none;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(15, 23, 42, 0.78);
+      color: var(--text-main);
+      backdrop-filter: blur(8px);
+      border-radius: 10px;
+      padding: 9px 42px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .viewer-label {
+      position: absolute;
+      top: 30px;
+      left: 5px;
+      z-index: 5;
+      max-width: 58vw;
+      pointer-events: none;
+    }
+
+    .viewer-label strong {
+      display: block;
+      font-size: 14px;
+      line-height: 1.25;
+    }
+
+    .viewer-label span {
+      display: none;
+    }
+
+    .viewer-help {
+      position: absolute;
+      bottom: -50px;
+      right: 20px;
+      z-index: 5;
+      font-size: 12px;
+      white-space: nowrap;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    #openseadragon-viewer {
+      width: 100%;
+      height: 100%;
+      background: #000000;
+    }
+
+    /* Sağ panelin tamamını kaplayan 3D sayfa */
+    .embedded-page-container {
+      position: absolute;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000000;
+    }
+
+    .embedded-page-container.show {
+      display: block;
+    }
+
+    .embedded-page-container iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      margin: 0;
+      padding: 0;
+      background: #000000;
+    }
+
+    .status-panel {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 20;
+      max-width: 520px;
+      width: calc(100% - 40px);
+      padding: 18px 20px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(15, 23, 42, 0.92);
+      color: var(--text-main);
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35);
+      display: none;
+    }
+
+    .status-panel.show {
+      display: block;
+    }
+
+    .status-panel h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .status-panel p {
+      margin: 7px 0;
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .status-panel code {
+      color: #fef3c7;
+      background: rgba(245, 158, 11, 0.1);
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    #imageFilterToolbar {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 25;
+      width: 250px;
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: #f8fafc;
+      font-size: 12px;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+    }
+
+    #imageFilterToolbar h4 {
+      margin: 0 0 8px;
+      font-size: 11px;
+      color: #f59e0b;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+    }
+
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 7px;
+    }
+
+    .filter-row label {
+      flex: 0 0 70px;
+      font-size: 11px;
+      color: #cbd5e1;
+    }
+
+    .filter-row input[type="range"] {
+      flex: 1;
+      min-width: 0;
+      accent-color: #f59e0b;
+      cursor: pointer;
+    }
+
+    .filter-row span {
+      flex: 0 0 34px;
+      text-align: right;
+      color: #fbbf24;
+      font-size: 11px;
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .filter-buttons button {
+      flex: 1;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      background: #1f2937;
+      color: #f8fafc;
+      padding: 6px 4px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .filter-buttons button:hover {
+      background: #334155;
+    }
+
+    .filter-buttons button.active {
+      background: #f59e0b;
+      border-color: #fbbf24;
+      color: #111827;
+    }
+
+    .doodle-toolbar {
+      position: absolute;
+      top: 140px;
+      left: 18px;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 10px;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(96, 165, 250, 0.35);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .doodle-toolbar button {
+      border: 1px solid rgba(96, 165, 250, 0.35);
+      background: rgba(30, 41, 59, 0.9);
+      color: #e5e7eb;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .doodle-toolbar button:hover {
+      background: rgba(96, 165, 250, 0.25);
+    }
+
+    .doodle-toolbar button.active {
+      background: rgba(96, 165, 250, 0.45);
+      color: #ffffff;
+    }
+
+    .doodle-color-control {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: #e5e7eb;
+      font-size: 12px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid rgba(96, 165, 250, 0.35);
+    }
+
+    .doodle-color-control input {
+      width: 34px;
+      height: 28px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .toolbar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .toolbar-header h4 {
+      margin: 0;
+    }
+
+    .toolbar-title {
+      color: #f59e0b;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+    }
+
+    .toolbar-toggle {
+      border: 1px solid rgba(245, 158, 11, 0.5);
+      background: rgba(30, 41, 59, 0.9);
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 4px 7px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .toolbar-toggle:hover {
+      background: rgba(245, 158, 11, 0.25);
+    }
+
+    .toolbar-body.hidden,
+    .doodle-body.hidden {
+      display: none;
+    }
+
+    .doodle-body {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .slide-credit {
+      position: absolute;
+      left: 16px;
+      bottom: 14px;
+      z-index: 30;
+      max-width: 70%;
+      padding: 7px 12px;
+      border-radius: 8px;
+      background: rgba(15, 23, 42, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      font-size: 12px;
+      line-height: 1.4;
+      pointer-events: none;
+      backdrop-filter: blur(6px);
+    }
+
+    .histology-label {
+      background: rgba(0, 0, 0, 0.65);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 16px;
+      font-family: Arial, sans-serif;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .label-toggle-btn {
+      display: inline-block;
+      margin-top: 8px;
+      border: 1px solid rgba(245, 158, 11, 0.6);
+      background: rgba(15, 23, 42, 0.88);
+      color: #f8fafc;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    .label-toggle-btn:hover {
+      background: rgba(245, 158, 11, 0.25);
+    }
+
+    .label-toggle-btn.off {
+      opacity: 0.55;
+    }
+
+    .mobile-toggle {
+      display: none;
+    }
+
+    @media (max-width: 820px) {
+      :root {
+        --sidebar-width: 280px;
+      }
+
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 130;
+        width: var(--sidebar-width);
+        transform: translateX(-100%);
+        transition: transform 0.2s ease;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .mobile-toggle {
+        display: block;
+        position: fixed;
+        left: 12px;
+        bottom: 12px;
+        z-index: 140;
+        border: 0;
+        border-radius: 999px;
+        padding: 11px 14px;
+        background: var(--accent);
+        color: #111827;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+      }
+
+      .viewer-topbar {
+        left: 10px;
+        right: 10px;
+      }
+
+      .viewer-help {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <img id="logo" src="tar.jpg" alt="logo" />
+        <div class="brand-fallback" id="logoFallback">LOGO</div>
+        <div class="brand-title">
+          <h1>Digital Slide Library</h1>
+          <p>Histology</p>
+        </div>
+      </div>
+
+      <a class="about-link" href="about.html">About this project</a>
+      <a class="about-link" href="">Histopathology</a> 
+
+      <div class="slide-tools">
+        <input
+          class="search-box"
+          id="slideSearch"
+          type="search"
+          placeholder="Search slide..."
+          autocomplete="off"
+        />
+        <div class="slide-count" id="slideCount"></div>
+      </div>
+
+      <div class="slide-list" id="slideList" aria-label="Slide listesi"></div>
+    </aside>
+
+    <section class="viewer-shell">
+      <div class="viewer-topbar">
+        <div class="viewer-label">
+          <strong id="currentTitle">Slide loading...</strong>
+          <span id="currentPath">Images/omurilik</span>
+          <button id="toggleLabelsBtn" class="label-toggle-btn" type="button">
+            Labels: ON
+          </button>
+        </div>
+      </div>
+
+      <div id="openseadragon-viewer"></div>
+
+      <!-- 3D SAYFA SAĞ TARAFTA TAM EKRAN -->
+      <div id="embeddedPageContainer" class="embedded-page-container">
+        <iframe
+          id="embeddedPageFrame"
+          title="Skin 3D Model"
+          src="about:blank"
+          allow="fullscreen; xr-spatial-tracking; accelerometer; gyroscope; autoplay"
+          allowfullscreen
+          loading="eager"
+        ></iframe>
+      </div>
+
+      <div class="slide-credit" id="slideCredit"></div>
+
+      <div class="doodle-toolbar" id="doodleToolbar">
+        <div class="toolbar-header">
+          <span class="toolbar-title">Draw Tools</span>
+          <button id="toggleDoodleToolbar" class="toolbar-toggle" type="button">Hide</button>
+        </div>
+
+        <div id="doodleToolbarBody" class="doodle-body">
+          <button data-tool="move" class="active">Move</button>
+          <button data-tool="path">Freehand</button>
+          <button data-tool="closed_path">Closed Freehand</button>
+          <button data-tool="rect">Rect</button>
+          <button data-tool="polygon">Polygon</button>
+          <button data-tool="circle">Circle</button>
+          <button data-tool="ellipse">Ellipse</button>
+          <button data-tool="line">Line</button>
+          <button data-tool="arrow_line">Arrow</button>
+          <button id="clear-doodle">Clear</button>
+
+          <label class="doodle-color-control">
+            <span>Color</span>
+            <input id="doodle-color" type="color" value="#ff0000" />
+          </label>
+        </div>
+      </div>
+
+      <div id="imageFilterToolbar">
+        <div class="toolbar-header">
+          <h4>Image Filters</h4>
+          <button id="toggleFilterToolbar" class="toolbar-toggle" type="button">Hide</button>
+        </div>
+
+        <div id="filterToolbarBody" class="toolbar-body">
+          <div class="filter-row">
+            <label>Brightness</label>
+            <input type="range" id="f-bright" min="50" max="200" value="100" />
+            <span id="v-bright">100</span>
+          </div>
+
+          <div class="filter-row">
+            <label>Contrast</label>
+            <input type="range" id="f-contrast" min="50" max="200" value="100" />
+            <span id="v-contrast">100</span>
+          </div>
+
+          <div class="filter-row">
+            <label>Saturation</label>
+            <input type="range" id="f-sat" min="0" max="200" value="100" />
+            <span id="v-sat">100</span>
+          </div>
+
+          <div class="filter-row">
+            <label>Gamma</label>
+            <input type="range" id="f-gamma" min="50" max="200" value="100" />
+            <span id="v-gamma">1.00</span>
+          </div>
+
+          <div class="filter-buttons">
+            <button id="f-invert" type="button">Invert</button>
+            <button id="f-gray" type="button">Gray</button>
+            <button id="f-reset" type="button">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <svg width="0" height="0" style="position:absolute">
+        <filter id="gamma-filter">
+          <feComponentTransfer>
+            <feFuncR type="gamma" amplitude="1" exponent="1" offset="0" />
+            <feFuncG type="gamma" amplitude="1" exponent="1" offset="0" />
+            <feFuncB type="gamma" amplitude="1" exponent="1" offset="0" />
+          </feComponentTransfer>
+        </filter>
+      </svg>
+
+      <div class="status-panel" id="statusPanel">
+        <h2 id="statusTitle">Info</h2>
+        <p id="statusMessage"></p>
+      </div>
+    </section>
+  </main>
+
+  <button class="mobile-toggle" id="mobileToggle" type="button">Slides</button>
+
+  <script>
+    const R2_BASE = "https://r2-uploader.virtualvizyon.workers.dev";
+
+    const slides = [
+      {
+        title: "enter",
+        description: "enter",
+        path: `${R2_BASE}/ind`,
+        fileFormat: "jpg",
+        isIntro: true,
+        hideInList: true,
+        hideTools: true
+      },
+
+      /* EMBRYO'NUN ÜSTÜNDEKİ 3D BUTONU */
+      {
+        title: "Skin 3D Model",
+        description: "Interactive three-dimensional skin model",
+        type: "embed",
+        url: "https://veterinarypathology3d.com/skin3d/index.html"
+      },
+
+      {
+        title: "Embryo",
+        description: "epithelium",
+        path: `${R2_BASE}/embryo_rat_20x`,
+        credit: "Credit: Embryo rat 20x — by AnatomyTool, License: CC BY-NC-SA",
+        fileFormat: "jpg",
+       
+      },
+
+      {
+        title: "Simple Squamous Epithelium",
+        description: "epithelium",
+        path: `${R2_BASE}/tekkatliyassi3`,
+        fileFormat: "jpg"
+      },
+      {
+        title: "Simple Cuboidal Epithelium",
+        description: "epithelium",
+        path: `${R2_BASE}/tekkub`,
+        fileFormat: "jpg"
+      },
+      {
+        title: "Simple Columnar Epithelium",
+        description: "epithelium",
+        path: `${R2_BASE}/tekpri`,
+        fileFormat: "jpg"
+      },
+      {
+        title: "Stratified Columnar Epithelium",
+        description: "epithelium",
+        path: `${R2_BASE}/cokpri`,
+        fileFormat: "jpg"
+      },
+      {
+        title: "Stratified Squamous Epithelium",
+        description: "epithelium",
+        path: `${R2_BASE}/cokkat/cokkat`,
+        fileFormat: "jpg"
+      },
+      {
+        title: "Skin",
+        description: "epithelium",
+        path: `${R2_BASE}/deri`,
+        fileFormat: "jpg"
+      },
+      {
+        title: "Skin Thin",
+        description: "skin",
+        path: `${R2_BASE}/derik`,
+        fileFormat: "jpg"
+      },
+      {
+        title: "Loose Connective Tissue",
+        description: "epithelium",
+        path: `${R2_BASE}/gevbag`,
+        fileFormat: "jpg"
+      },
+      {
+        title: "Elastic Cartilage",
+        description: "epithelium",
+        path: `${R2_BASE}/elastik`,
+        fileFormat: "jpg"
+      },
+      {
+        title: "Skeletal Muscle",
+        description: "muscle",
+        path: `${R2_BASE}/iskelet`,
+        fileFormat: "jpg"
+      },
+      {
+        title: "Bone",
+        description: "bone",
+        path: `${R2_BASE}/kemik`,
+        fileFormat: "jpg"
+      },
+
+    /*{
+        title: "Bone 2",
+        description: "bone 2",
+        path: `${R2_BASE}/densebone`,
+        fileFormat: "jpg"
+      },
+*/
+      {
+        title: "Brain",
+        description: "brain",
+        path: `${R2_BASE}/beyin1`,
+        fileFormat: "jpg"
+      },
+      {
+        title: "Brain 2",
+        description: "brain cerebrum",
+        path: `${R2_BASE}/beyin`,
+        fileFormat: "jpg"
+      },
+      {
+        title: "Cerebellum",
+        description: "cerebellum",
+        path: `${R2_BASE}/cerebellum_dog_20x_um_nl`,
+        credit: "Credit: cerebellum dog 20x at AnatomyTOOL.org, license: Creative Commons Attribution-NonCommercial-ShareAlike",
+        fileFormat: "jpg",
+        labels: [
+          { text: "Molecular layer", x: 20584, y: 34469 },
+          { text: "Purkinje cell layer", x: 12276, y: 16138 },
+          { text: "Granular layer", x: 18383, y: 31093 },
+          { text: "White matter", x: 23820, y: 16442 }
+        ]
+      },
+      {
+        title: "Spinal cord",
+        description: "spinal",
+        path: `${R2_BASE}/omurilik/omurilik`,
+        fileFormat: "jpg",
+         
+      },
+      {
+        title: "Root ganglion / nerve",
+        description: "spinal nerve",
+        path: `${R2_BASE}/spinal/spinal`,
+        fileFormat: "jpg"
+      },
+      {
+        title: "Blood",
+        description: "blood",
+        path: `${R2_BASE}/kan1`,
+        fileFormat: "jpg"
+      },
+      {
+        title: "Lung",
+        description: "lung",
+        path: `${R2_BASE}/akciger`,
+        fileFormat: "jpg"
+      },
+
+ {
+        title: "Tongue",
+        description: "Tongue",
+        path: `${R2_BASE}/tongue`,
+        fileFormat: "jpg"
+      },
+
+       {
+        title: "larynx",
+        description: "larynx",
+        path: `${R2_BASE}/larynx`,
+        fileFormat: "jpg"
+      },
+
+      {
+        title: "Esophagus",
+        description: "esophagus",
+        path: `${R2_BASE}/ozofagus`,
+        fileFormat: "jpg"
+      },
+
+      {
+        title: "Gastroesophageal Junction",
+        description: "Gastroesophageal Junction",
+        path: `${R2_BASE}/okf`,
+        fileFormat: "jpg"
+
+},   
+
+      {
+        title: "Jejenum ",
+        description: "Jejenum ",
+        path: `${R2_BASE}/jejenum`,
+        fileFormat: "jpg"
+
+},   
+
+{
+        title: "Colon",
+        description: "Colon",
+        path: `${R2_BASE}/kolon`,
+        fileFormat: "jpg"
+
+},
+{
+        title: "Spleen",
+        description: "Spleen",
+        path: `${R2_BASE}/dalak`,
+        fileFormat: "jpg"
+
+},
+{
+        title: "Pancreas",
+        description: "Pancreas",
+        path: `${R2_BASE}/pankreas`,
+        fileFormat: "jpg"
+
+},
+{
+        title: "Gall Bladder",
+        description: "Gall Bladder",
+        path: `${R2_BASE}/safra`,
+        fileFormat: "jpg"
+
+},{
+        title: "Urinary bladder",
+        description: "Urinary bladder",
+        path: `${R2_BASE}/idrar`,
+        fileFormat: "jpg"
+
+},
+{
+        title: "Liver",
+        description: "Liver",
+        path: `${R2_BASE}/karaciger`,
+        fileFormat: "jpg"
+
+},
+
+{
+        title: "Kidney",
+        description: "Kidney",
+        path: `${R2_BASE}/bobrek1`,
+        fileFormat: "jpg"
+
+},
+{
+
+        title: "Lymph node",
+        description: "Lymph node",
+        path: `${R2_BASE}/lenf`,
+        fileFormat: "jpg"
+
+},
+
+{
+
+        title: "Ovarium",
+        description: "Ovarium",
+        path: `${R2_BASE}/ovaryum`,
+        fileFormat: "jpg"
+
+},
+{
+
+        title: "Vessels",
+        description: "Vessels",
+        path: `${R2_BASE}/damar`,
+        fileFormat: "jpg"
+
+},
+{
+
+        title: "Aorta",
+        description: "Aorta",
+        path: `${R2_BASE}/aort`,
+        fileFormat: "jpg"
+
+},
+{
+
+        title: "Mammary gland",
+        description: "Mammary gland",
+        path: `${R2_BASE}/meme`,
+        fileFormat: "jpg"
+
+},
+{
+
+        title: "Eye",
+        description: "Eye",
+        path: `${R2_BASE}/gozson`,
+        fileFormat: "jpg"
+
+},
+{
+
+        title: "Hypophysis",
+        description: "Hypophysis",
+        path: `${R2_BASE}/hipofiz`,
+        fileFormat: "jpg"
+
+},
+{
+
+        title: "Adrenal gland",
+        description: "Adrenal gland",
+        path: `${R2_BASE}/adren1`,
+        fileFormat: "jpg"
+
+},
+
+{
+
+        title: "Penis",
+        description: "Penis",
+        path: `${R2_BASE}/penis`,
+        fileFormat: "jpg"
+
+},
+
+{
+
+        title: "Prostate gland",
+        description: "Prostate gland",
+        path: `${R2_BASE}/prostate`,
+        fileFormat: "jpg"
+
+},
+
+{
+
+        title: "Ampulla",
+        description: "Ampulla",
+        path: `${R2_BASE}/ampulla`,
+        fileFormat: "jpg"
+
+},
+
+{
+
+        title: "Uterus secretory",
+        description: "Uterus secretory",
+        path: `${R2_BASE}/uterus_secretory`,
+        fileFormat: "jpg"
+
+},
+
+{
+
+        title: "Uterus proliferative",
+        description: "Uterus proliferative",
+        path: `${R2_BASE}/uterus_proliferative`,
+        fileFormat: "jpg"
+
+},
+
+
+
+
+    ];
+
+    const OSD_CDN_PREFIX = "https://cdn.jsdelivr.net/npm/openseadragon@6.0.2/build/openseadragon/images/";
+
+    const slideListEl = document.getElementById("slideList");
+    const slideSearchEl = document.getElementById("slideSearch");
+    const slideCountEl = document.getElementById("slideCount");
+    const currentTitleEl = document.getElementById("currentTitle");
+    const currentPathEl = document.getElementById("currentPath");
+    const slideCreditEl = document.getElementById("slideCredit");
+    const statusPanelEl = document.getElementById("statusPanel");
+    const statusTitleEl = document.getElementById("statusTitle");
+    const statusMessageEl = document.getElementById("statusMessage");
+    const sidebarEl = document.getElementById("sidebar");
+    const mobileToggleEl = document.getElementById("mobileToggle");
+    const logoEl = document.getElementById("logo");
+    const logoFallbackEl = document.getElementById("logoFallback");
+    const viewerLabelEl = document.querySelector(".viewer-label");
+    const doodleToolbarEl = document.getElementById("doodleToolbar");
+    const imageFilterToolbarEl = document.getElementById("imageFilterToolbar");
+    const openseadragonViewerEl = document.getElementById("openseadragon-viewer");
+    const embeddedPageContainerEl = document.getElementById("embeddedPageContainer");
+    const embeddedPageFrameEl = document.getElementById("embeddedPageFrame");
+
+    let viewer;
+    let activeSlideIndex = 0;
+    let labelsVisible = true;
+    let activeLabelElements = [];
+
+    window.currentSlideForDoodle = null;
+
+    function clearHistologyLabels() {
+      if (!viewer) return;
+
+      activeLabelElements.forEach((label) => {
+        try {
+          viewer.removeOverlay(label);
+        } catch (error) {
+          console.warn("Label overlay could not be removed:", error);
+        }
+        label.remove();
+      });
+
+      activeLabelElements = [];
+    }
+
+    function updateLabelButton() {
+      const btn = document.getElementById("toggleLabelsBtn");
+      if (!btn) return;
+
+      btn.textContent = labelsVisible ? "Labels: ON" : "Labels: OFF";
+      btn.classList.toggle("off", !labelsVisible);
+    }
+
+    function setHistologyLabelVisibility() {
+      activeLabelElements.forEach((label) => {
+        label.style.display = labelsVisible ? "block" : "none";
+      });
+
+      updateLabelButton();
+    }
+
+    function addHistologyLabelsForActiveSlide() {
+      if (!viewer) return;
+
+      clearHistologyLabels();
+
+      const slide = slides[activeSlideIndex];
+
+      if (!slide || slide.type === "embed" || !slide.labels || slide.labels.length === 0) {
+        updateLabelButton();
+        return;
+      }
+
+      slide.labels.forEach((a) => {
+        const label = document.createElement("div");
+        label.className = "histology-label";
+        label.textContent = a.text;
+
+        const point = viewer.viewport.imageToViewportCoordinates(a.x, a.y);
+
+        viewer.addOverlay({
+          element: label,
+          location: point,
+          placement: OpenSeadragon.Placement.CENTER
+        });
+
+        activeLabelElements.push(label);
+      });
+
+      setHistologyLabelVisibility();
+    }
+
+    logoEl.addEventListener("error", () => {
+      logoEl.style.display = "none";
+      logoFallbackEl.style.display = "flex";
+    });
+
+    mobileToggleEl.addEventListener("click", () => {
+      sidebarEl.classList.toggle("open");
+    });
+
+    document.getElementById("toggleLabelsBtn").addEventListener("click", function () {
+      labelsVisible = !labelsVisible;
+      setHistologyLabelVisibility();
+    });
+
+    function showStatus(title, message) {
+      statusTitleEl.textContent = title;
+      statusMessageEl.innerHTML = message;
+      statusPanelEl.classList.add("show");
+    }
+
+    function hideStatus() {
+      statusPanelEl.classList.remove("show");
+    }
+
+    function normalizeFolderPath(path) {
+      return path.endsWith("/") ? path : path + "/";
+    }
+
+    async function readZoomifyMetadata(slide) {
+      if (slide.width && slide.height) {
+        return {
+          width: Number(slide.width),
+          height: Number(slide.height),
+          tileSize: Number(slide.tileSize || 256)
+        };
+      }
+
+      const xmlPath = normalizeFolderPath(slide.path) + "ImageProperties.xml";
+      const response = await fetch(xmlPath, { cache: "no-store" });
+
+      if (!response.ok) {
+        throw new Error("ImageProperties.xml cannot be found: " + xmlPath);
+      }
+
+      const xmlText = await response.text();
+      const xmlDoc = new DOMParser().parseFromString(xmlText, "application/xml");
+      const imageProperties = xmlDoc.querySelector("IMAGE_PROPERTIES");
+
+      if (!imageProperties) {
+        throw new Error("IMAGE_PROPERTIES could not be read from ImageProperties.xml.");
+      }
+
+      const width = Number(imageProperties.getAttribute("WIDTH"));
+      const height = Number(imageProperties.getAttribute("HEIGHT"));
+      const tileSize = Number(
+        imageProperties.getAttribute("TILESIZE") || slide.tileSize || 256
+      );
+
+      if (!width || !height) {
+        throw new Error("WIDTH or HEIGHT is missing from ImageProperties.xml.");
+      }
+
+      return { width, height, tileSize };
+    }
+
+    async function buildZoomifyTileSource(slide) {
+      const meta = await readZoomifyMetadata(slide);
+
+      return {
+        type: "zoomifytileservice",
+        width: meta.width,
+        height: meta.height,
+        tileSize: meta.tileSize || 256,
+        tilesUrl: normalizeFolderPath(slide.path),
+        fileFormat: slide.fileFormat || "jpg"
+      };
+    }
+
+    function initializeViewer() {
+      if (!window.OpenSeadragon) {
+        showStatus(
+          "OpenSeadragon not loaded",
+          "Check that <code>openseadragon.min.js</code> is in the same folder as this HTML file."
+        );
+        return;
+      }
+
+      viewer = window.viewer = OpenSeadragon({
+        id: "openseadragon-viewer",
+        prefixUrl: OSD_CDN_PREFIX,
+        showNavigator: false,
+        animationTime: 0.6,
+        blendTime: 0.15,
+        constrainDuringPan: true,
+        visibilityRatio: 0.8,
+        maxZoomPixelRatio: 8,
+        minZoomImageRatio: 0.85,
+        homeFillsViewer: false,
+        showRotationControl: true,
+        gestureSettingsMouse: {
+          clickToZoom: true,
+          dblClickToZoom: true,
+          flickEnabled: true
+        },
+        tileSources: []
+      });
+
+      viewer.addHandler("open", function () {
+        hideStatus();
+        viewer.viewport.goHome(true);
+
+        setTimeout(function () {
+          if (viewer.navigator && viewer.navigator.element) {
+            viewer.navigator.element.style.zIndex = "50";
+            viewer.navigator.element.style.opacity = "1";
+            viewer.navigator.element.style.background = "#ffffff";
+            viewer.navigator.element.style.border = "2px solid #f59e0b";
+          }
+
+          if (typeof applyImageFilters === "function") {
+            filterCanvasEl = null;
+            applyImageFilters();
+          }
+
+          addHistologyLabelsForActiveSlide();
+        }, 200);
+      });
+
+      viewer.addHandler("open-failed", (event) => {
+        showStatus(
+          "Slide not loaded",
+          "Tile source could not be loaded. Check the folder path and <code>ImageProperties.xml</code>.<br><br>Detail: " +
+            (event && event.message ? event.message : "Unknown error")
+        );
+      });
+
+      viewer.addHandler("canvas-click", function (event) {
+        if (!event.quick) return;
+
+        const viewportPoint = viewer.viewport.pointFromPixel(event.position);
+        const imagePoint = viewer.viewport.viewportToImageCoordinates(viewportPoint);
+
+        console.log(
+          "x:",
+          Math.round(imagePoint.x),
+          "y:",
+          Math.round(imagePoint.y)
+        );
+      });
+    }
+
+    function showEmbeddedPage(slide) {
+      clearHistologyLabels();
+      hideStatus();
+
+      window.currentSlideForDoodle = null;
+
+      currentTitleEl.textContent = "";
+      currentPathEl.textContent = "";
+
+      if (viewerLabelEl) viewerLabelEl.style.display = "none";
+      if (doodleToolbarEl) doodleToolbarEl.style.display = "none";
+      if (imageFilterToolbarEl) imageFilterToolbarEl.style.display = "none";
+      if (slideCreditEl) slideCreditEl.style.display = "none";
+      if (openseadragonViewerEl) openseadragonViewerEl.style.display = "none";
+
+      if (embeddedPageFrameEl.getAttribute("src") !== slide.url) {
+        embeddedPageFrameEl.src = slide.url;
+      }
+
+      embeddedPageContainerEl.classList.add("show");
+    }
+
+    function hideEmbeddedPage() {
+      embeddedPageContainerEl.classList.remove("show");
+
+      if (openseadragonViewerEl) {
+        openseadragonViewerEl.style.display = "block";
+      }
+    }
+
+    async function loadSlide(index) {
+      const slide = slides[index];
+      if (!slide) return;
+
+      activeSlideIndex = index;
+      renderSlideList();
+      sidebarEl.classList.remove("open");
+
+      if (slide.type === "embed") {
+        showEmbeddedPage(slide);
+        return;
+      }
+
+      hideEmbeddedPage();
+      clearHistologyLabels();
+
+      window.currentSlideForDoodle = slide;
+
+      const isIntro = Boolean(slide.isIntro);
+
+      currentTitleEl.textContent = isIntro ? "" : slide.title;
+      currentPathEl.textContent = slide.path || "";
+
+      if (viewerLabelEl) {
+        viewerLabelEl.style.display = isIntro ? "none" : "block";
+      }
+
+      if (doodleToolbarEl) {
+        doodleToolbarEl.style.display = slide.hideTools ? "none" : "flex";
+      }
+
+      if (imageFilterToolbarEl) {
+        imageFilterToolbarEl.style.display = slide.hideTools ? "none" : "block";
+      }
+
+      slideCreditEl.textContent = slide.credit || "";
+      slideCreditEl.style.display = slide.credit && !isIntro ? "block" : "none";
+
+      showStatus("Slide loading...", `<code>${slide.path}</code> preparing.`);
+
+      try {
+        const tileSource = await buildZoomifyTileSource(slide);
+        viewer.open(tileSource);
+      } catch (error) {
+        showStatus(
+          "Metadata cannot be read",
+          `${error.message}<br><br>Make sure the page is opened through a web server. Opening it with <code>file://</code> may prevent the browser from reading <code>ImageProperties.xml</code>.`
+        );
+      }
+    }
+
+    function renderSlideList() {
+      const query = slideSearchEl.value.trim().toLowerCase();
+      slideListEl.innerHTML = "";
+
+      const filtered = slides
+        .map((slide, index) => ({ slide, index }))
+        .filter(({ slide }) => {
+          if (slide.hideInList) return false;
+
+          const target = `
+            ${slide.title || ""}
+            ${slide.description || ""}
+            ${slide.path || ""}
+            ${slide.url || ""}
+          `.toLowerCase();
+
+          return target.includes(query);
+        });
+
+      slideCountEl.textContent = `${filtered.length} slides in slidebox`;
+
+      filtered.forEach(({ slide, index }) => {
+        const button = document.createElement("button");
+
+        button.className =
+          "slide-item" +
+          (slide.type === "embed" ? " embed-item" : "") +
+          (index === activeSlideIndex ? " active" : "");
+
+        button.type = "button";
+        button.innerHTML = `
+          <span class="slide-title">
+            ${slide.type === "embed" ? "◈ " : ""}${slide.title}
+          </span>
+          <span class="slide-path">${slide.path || slide.url || ""}</span>
+        `;
+
+        button.addEventListener("click", () => {
+          loadSlide(index);
+        });
+
+        slideListEl.appendChild(button);
+      });
+    }
+
+    slideSearchEl.addEventListener("input", renderSlideList);
+
+    let filterCanvasEl = null;
+
+    let imageFilterState = {
+      bright: 100,
+      contrast: 100,
+      sat: 100,
+      gamma: 1.0,
+      invert: false,
+      gray: false
+    };
+
+    function getFilterCanvas() {
+      if (!filterCanvasEl || !document.body.contains(filterCanvasEl)) {
+        filterCanvasEl = document.querySelector(
+          "#openseadragon-viewer .openseadragon-canvas"
+        );
+      }
+      return filterCanvasEl;
+    }
+
+    function applyImageFilters() {
+      const canvas = getFilterCanvas();
+      if (!canvas) return;
+
+      const filters = [];
+
+      filters.push("brightness(" + imageFilterState.bright / 100 + ")");
+      filters.push("contrast(" + imageFilterState.contrast / 100 + ")");
+      filters.push("saturate(" + imageFilterState.sat / 100 + ")");
+
+      if (imageFilterState.invert) filters.push("invert(1)");
+      if (imageFilterState.gray) filters.push("grayscale(1)");
+
+      if (Math.abs(imageFilterState.gamma - 1.0) > 0.001) {
+        filters.push("url(#gamma-filter)");
+      }
+
+      canvas.style.filter = filters.join(" ");
+    }
+
+    function bindImageFilterSlider(sliderId, valueId, key) {
+      const slider = document.getElementById(sliderId);
+      const value = document.getElementById(valueId);
+
+      slider.addEventListener("input", function () {
+        imageFilterState[key] = parseInt(this.value, 10);
+        value.textContent = this.value;
+        applyImageFilters();
+      });
+    }
+
+    bindImageFilterSlider("f-bright", "v-bright", "bright");
+    bindImageFilterSlider("f-contrast", "v-contrast", "contrast");
+    bindImageFilterSlider("f-sat", "v-sat", "sat");
+
+    document.getElementById("f-gamma").addEventListener("input", function () {
+      const gamma = Number(this.value) / 100;
+
+      imageFilterState.gamma = gamma;
+      document.getElementById("v-gamma").textContent = gamma.toFixed(2);
+
+      ["feFuncR", "feFuncG", "feFuncB"].forEach(function (tag) {
+        const node = document.querySelector("#gamma-filter " + tag);
+        if (node) node.setAttribute("exponent", gamma);
+      });
+
+      applyImageFilters();
+    });
+
+    document.getElementById("f-invert").addEventListener("click", function () {
+      imageFilterState.invert = !imageFilterState.invert;
+      this.classList.toggle("active", imageFilterState.invert);
+      applyImageFilters();
+    });
+
+    document.getElementById("f-gray").addEventListener("click", function () {
+      imageFilterState.gray = !imageFilterState.gray;
+      this.classList.toggle("active", imageFilterState.gray);
+      applyImageFilters();
+    });
+
+    document.getElementById("f-reset").addEventListener("click", function () {
+      imageFilterState = {
+        bright: 100,
+        contrast: 100,
+        sat: 100,
+        gamma: 1.0,
+        invert: false,
+        gray: false
+      };
+
+      document.getElementById("f-bright").value = 100;
+      document.getElementById("v-bright").textContent = "100";
+      document.getElementById("f-contrast").value = 100;
+      document.getElementById("v-contrast").textContent = "100";
+      document.getElementById("f-sat").value = 100;
+      document.getElementById("v-sat").textContent = "100";
+      document.getElementById("f-gamma").value = 100;
+      document.getElementById("v-gamma").textContent = "1.00";
+      document.getElementById("f-invert").classList.remove("active");
+      document.getElementById("f-gray").classList.remove("active");
+
+      ["feFuncR", "feFuncG", "feFuncB"].forEach(function (tag) {
+        const node = document.querySelector("#gamma-filter " + tag);
+        if (node) node.setAttribute("exponent", 1);
+      });
+
+      applyImageFilters();
+    });
+
+    const filterToolbarBody = document.getElementById("filterToolbarBody");
+    const toggleFilterToolbarBtn = document.getElementById("toggleFilterToolbar");
+
+    if (filterToolbarBody && toggleFilterToolbarBtn) {
+      toggleFilterToolbarBtn.addEventListener("click", function () {
+        filterToolbarBody.classList.toggle("hidden");
+
+        const isHidden = filterToolbarBody.classList.contains("hidden");
+        toggleFilterToolbarBtn.textContent = isHidden ? "Show" : "Hide";
+      });
+    }
+
+    renderSlideList();
+    initializeViewer();
+    loadSlide(0);
+  </script>
+
+  <script type="module">
+    import { createDoodle } from "https://esm.sh/@wtsml/doodle@1.0.5";
+
+    const viewer = window.viewer;
+
+    if (!viewer) {
+      console.error("OpenSeadragon viewer could not be found.");
+    } else {
+      let currentDoodleColor = "#ff0000";
+      let selectedShape = null;
+
+      const doodle = createDoodle({
+        viewer,
+
+        onAdd: (shape) => {
+          shape.color = currentDoodleColor;
+          doodle.addShape(shape);
+          saveCurrentShapes();
+        },
+
+        onRemove: (shape) => {
+          doodle.removeShape(shape);
+          saveCurrentShapes();
+        },
+
+        onUpdate: (shape) => {
+          doodle.updateShape(shape);
+          saveCurrentShapes();
+        },
+
+        onSelect: (shape) => {
+          selectedShape = shape;
+        },
+
+        onCancelSelect: () => {
+          selectedShape = null;
+        }
+      });
+
+      doodle.strokeWidth = 5;
+      window.doodle = doodle;
+
+      function saveCurrentShapes() {
+        if (window.currentSlideForDoodle) {
+          window.currentSlideForDoodle.shapes = doodle.getShapes();
+        }
+      }
+
+      const colorInput = document.getElementById("doodle-color");
+
+      if (colorInput) {
+        colorInput.addEventListener("input", function () {
+          currentDoodleColor = this.value;
+
+          doodle.setDefaultColor(currentDoodleColor);
+          doodle.setBrushColor(currentDoodleColor);
+
+          if (selectedShape) {
+            selectedShape.color = currentDoodleColor;
+            doodle.updateShape(selectedShape);
+            saveCurrentShapes();
+          }
+        });
+
+        doodle.setDefaultColor(currentDoodleColor);
+        doodle.setBrushColor(currentDoodleColor);
+      }
+
+      const doodleToolbarBody = document.getElementById("doodleToolbarBody");
+      const toggleDoodleToolbarBtn = document.getElementById("toggleDoodleToolbar");
+
+      if (doodleToolbarBody && toggleDoodleToolbarBtn) {
+        toggleDoodleToolbarBtn.addEventListener("click", function () {
+          doodleToolbarBody.classList.toggle("hidden");
+
+          const isHidden = doodleToolbarBody.classList.contains("hidden");
+          toggleDoodleToolbarBtn.textContent = isHidden ? "Show" : "Hide";
+
+          if (isHidden) {
+            doodle.setMode("move");
+            doodle.setPan(true);
+            selectedShape = null;
+
+            document
+              .querySelectorAll(".doodle-toolbar button[data-tool]")
+              .forEach((btn) => btn.classList.remove("active"));
+
+            const moveButton = document.querySelector(
+              '.doodle-toolbar button[data-tool="move"]'
+            );
+
+            if (moveButton) moveButton.classList.add("active");
+          }
+        });
+      }
+
+      document
+        .querySelectorAll(".doodle-toolbar button[data-tool]")
+        .forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const tool = btn.dataset.tool;
+
+            document
+              .querySelectorAll(".doodle-toolbar button[data-tool]")
+              .forEach((b) => b.classList.remove("active"));
+
+            btn.classList.add("active");
+            doodle.setMode(tool);
+            doodle.setPan(tool === "move");
+          });
+        });
+
+      document.getElementById("clear-doodle").addEventListener("click", () => {
+        doodle.clear();
+
+        if (window.currentSlideForDoodle) {
+          window.currentSlideForDoodle.shapes = [];
+        }
+      });
+
+      viewer.addHandler("open", () => {
+        doodle.clear();
+
+        const slide = window.currentSlideForDoodle;
+
+        if (slide && slide.shapes && slide.shapes.length > 0) {
+          doodle.addShapes(slide.shapes);
+        }
+      });
+    }
+  </script>
+</body>
+</html>
