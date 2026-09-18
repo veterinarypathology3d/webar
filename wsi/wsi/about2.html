@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About | WSI Viewer</title>
+  <style>
+    :root {
+      --bg-main: #020617;
+      --bg-panel: #0f172a;
+      --bg-card: #111827;
+      --text-main: #e5e7eb;
+      --text-muted: #94a3b8;
+      --accent: #60a5fa;
+      --accent-soft: rgba(96, 165, 250, 0.14);
+      --border-soft: rgba(255, 255, 255, 0.12);
+      --shadow: rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(96, 165, 250, 0.16), transparent 32%),
+        linear-gradient(135deg, #020617 0%, #0f172a 55%, #111827 100%);
+      color: var(--text-main);
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      padding: 32px 18px;
+    }
+
+    .page {
+      width: min(1100px, 100%);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-wrap {
+      width: 108px;
+      height: 100px;
+      border-radius: 16px;
+      border: 4px solid var(--border-soft);
+      background: rgba(255, 255, 255, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .logo-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 8px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: 0.2px;
+    }
+
+    .subtitle {
+      margin: 5px 0 0;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(96, 165, 250, 0.35);
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .back-btn:hover {
+      background: rgba(96, 165, 250, 0.24);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .card {
+      border: 1px solid var(--border-soft);
+      background: rgba(15, 23, 42, 0.82);
+      backdrop-filter: blur(10px);
+      border-radius: 18px;
+      box-shadow: 0 18px 45px var(--shadow);
+      overflow: hidden;
+    }
+
+    .content {
+      padding: 28px;
+    }
+
+    .content h2 {
+      margin: 0 0 14px;
+      font-size: 24px;
+    }
+
+    .content p {
+      margin: 0 0 14px;
+      color: var(--text-muted);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .info-box {
+      border: 1px solid var(--border-soft);
+      background: rgba(255, 255, 255, 0.045);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .info-box strong {
+      display: block;
+      color: var(--text-main);
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+
+    .info-box span {
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .image-card {
+      min-height: 460px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .image-wrap {
+      flex: 1;
+      min-height: 340px;
+      background:
+        linear-gradient(135deg, rgba(96, 165, 250, 0.18), rgba(15, 23, 42, 0.2)),
+        rgba(255, 255, 255, 0.04);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .image-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .image-placeholder {
+      position: absolute;
+      inset: 5px;
+      border: 1px dashed rgba(255, 255, 255, 0.28);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8px;
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .image-caption {
+      padding: 16px 18px;
+      border-top: 1px solid var(--border-soft);
+      color: var(--text-muted);
+      font-size: 13px;
+      background: rgba(2, 6, 23, 0.38);
+    }
+
+    .section {
+      margin-top: 22px;
+      padding: 24px 28px;
+    }
+
+    .section h2 {
+      margin: 0 0 12px;
+      font-size: 20px;
+    }
+
+    .section ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--text-muted);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    .footer {
+      margin-top: 20px;
+      color: var(--text-muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    @media (max-width: 800px) {
+      body {
+        padding: 20px 12px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .image-card {
+        min-height: 360px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo-wrap">
+          <img src="images/tar.jpg" alt="University logo" onerror="this.style.display='none'" />
+        </div>
+        <div>
+          <h1>About This Project</h1>
+          <p class="subtitle">Digital histology/ histopathology  whole-slide image viewer</p>
+        </div>
+      </div>
+
+      <a class="back-btn" href="Histo4Pathology_annotations.html">← Back to Viewer</a>
+    </header>
+
+    <section class="hero">
+      <article class="card content">
+        <h2>Project Overview</h2>
+        <p>
+          This web-based viewer was developed to provide students and instructors with easy access to digital histology and whole-slide image resources.
+          The platform uses OpenSeadragon to display high-resolution Zoomify tile images directly in the browser.
+        </p>
+        <p>
+          The goal is to support observation, tissue recognition, lesion description, and visual learning through an interactive, zoomable slide environment.
+        </p>
+        <p>
+          
+        </p>
+
+        <div class="info-grid">
+          <div class="info-box">
+            <strong>Viewer</strong>
+            <span>OpenSeadragon with Zoomify tile folders</span>
+          </div>
+          <div class="info-box">
+            <strong>Content</strong>
+            <span>Histology and whole-slide images</span>
+          </div>
+          <div class="info-box">
+            <strong>Use</strong>
+            <span>Teaching, review, and self-guided study</span>
+          </div>
+          <div class="info-box">
+            <strong>Navigation</strong>
+            <span>Return to the main viewer using the Back button</span>
+          </div>
+        </div>
+      </article>
+
+      <aside class="card image-card">
+        <div class="image-wrap">
+          <!-- Put your image here: Images/about-image.jpg -->
+          <img src="" alt="Project image" onerror="this.style.display='none'" />
+          <div class="image-placeholder">
+        <img src="images/opcvm.png" alt="University logo" onerror="this.style.display='none'" />
+
+          </div>
+        </div>
+        
+      </aside>
+    </section>
+
+    <section class="card section">
+      <h2>Educational Purpose</h2>
+      <ul>
+        <li>Provide browser-based access to high-resolution histology or pathology slides.</li>
+        <li>Help learners practice systematic visual observation and tissue recognition.</li>
+        <li>Support integration of anatomy, histology, pathology, and clinical reasoning.</li>
+      </ul>
+    </section>
+
+    <div class="footer">
+      Dr.H.Tarik Atmaca - Associate Professor of Pathology; Lincoln Memorial University-College of Veterinary Medicine at Orange Park (LMU-OPCVM)
+    </div>
+  </main>
+</body>
+</html>
