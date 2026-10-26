@@ -1591,28 +1591,28 @@
     ],
     "texts": [
       {
-        "text": "Epidermis",
+        "text": "Sweat gland",
         "x": 16859,
         "y": 6480,
         "color": "#44ff00",
         "fontSize": 18
       },
       {
-        "text": "Between dermal papilla",
+        "text": "B Arrector pili muscle,
         "x": 22073,
         "y": 3164,
         "color": "#ffc800",
         "fontSize": 18
       },
       {
-        "text": "Stratum granulosum",
+        "text": "Sebaceous gland",
         "x": 21022,
         "y": 2177,
         "color": "#ffc800",
         "fontSize": 18
       },
       {
-        "text": "Subcutis",
+        "text": "Hair follicle",
         "x": 16436,
         "y": 5039,
         "color": "#2bff00",
