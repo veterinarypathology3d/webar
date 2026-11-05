@@ -952,7 +952,7 @@
         description: "spinal",
         path: `${R2_BASE}/omurilik/omurilik`,
         fileFormat: "jpg",
-         
+         rotation: 180
       },
       {
         title: "Root ganglion / nerve",
@@ -960,6 +960,14 @@
         path: `${R2_BASE}/spinal/spinal`,
         fileFormat: "jpg"
       },
+      {
+
+        title: "Eye",
+        description: "Eye",
+        path: `${R2_BASE}/gozson`,
+        fileFormat: "jpg"
+
+},
       /* {
         title: "Blood",
         description: "blood",
@@ -1100,14 +1108,7 @@
         fileFormat: "jpg"
 
 },
-{
 
-        title: "Eye",
-        description: "Eye",
-        path: `${R2_BASE}/gozson`,
-        fileFormat: "jpg"
-
-},
 {
 
         title: "Hypophysis",
@@ -1490,15 +1491,21 @@
 
       showStatus("Slide loading...", `<code>${slide.path}</code> preparing.`);
 
-      try {
-        const tileSource = await buildZoomifyTileSource(slide);
-        viewer.open(tileSource);
-      } catch (error) {
-        showStatus(
-          "Metadata cannot be read",
-          `${error.message}<br><br>Make sure the page is opened through a web server. Opening it with <code>file://</code> may prevent the browser from reading <code>ImageProperties.xml</code>.`
-        );
-      }
+     try {
+    const tileSource = await buildZoomifyTileSource(slide);
+
+    viewer.addOnceHandler("open", function () {
+        viewer.viewport.setRotation(slide.rotation || 0);
+    });
+
+    viewer.open(tileSource);
+
+} catch (error) {
+    showStatus(
+        "Metadata cannot be read",
+        `${error.message}<br><br>Make sure the page is opened through a web server. Opening it with <code>file://</code> may prevent the browser from reading <code>ImageProperties.xml</code>.`
+    );
+}
     }
 
     function renderSlideList() {
@@ -1681,7 +1688,7 @@
     const viewer = window.viewer;
     const params = new URLSearchParams(window.location.search);
     const instructorMode = params.get("instructor") === "1";
-    const ANNOTATION_FILE = "instructor_annotations.json";
+    const ANNOTATION_FILE = "instructor_annotations(4).json";
     const INSTRUCTOR_LOCAL_STORAGE_KEY = "histo4pathology_instructor_annotations_v2";
     const STUDENT_LOCAL_STORAGE_KEY = "histo4pathology_student_annotations_v1";
 
